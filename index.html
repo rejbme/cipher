@@ -1,0 +1,521 @@
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: var(--color-background-primary);
+  --bg2: var(--color-background-secondary);
+  --bg3: var(--color-background-tertiary);
+  --border: var(--color-border-tertiary);
+  --border2: var(--color-border-secondary);
+  --text: var(--color-text-primary);
+  --text2: var(--color-text-secondary);
+  --text3: var(--color-text-tertiary);
+  --r: var(--border-radius-md);
+  --rl: var(--border-radius-lg);
+  --accent: #378ADD;
+}
+#app { font-family: var(--font-sans); min-height: 600px; display: flex; flex-direction: column; padding: 1rem 0; position: relative; }
+.screen { display: none; flex-direction: column; }
+.screen.active { display: flex; }
+.setup-wrap { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.5rem; padding: 2rem 1rem; min-height: 560px; }
+.logo-icon { width: 56px; height: 56px; border-radius: 16px; background: var(--accent); display: flex; align-items: center; justify-content: center; }
+.logo-icon i { font-size: 28px; color: #fff; }
+.setup-card { background: var(--bg); border: 0.5px solid var(--border2); border-radius: var(--rl); padding: 1.5rem; width: 100%; max-width: 380px; display: flex; flex-direction: column; gap: 1rem; }
+.setup-card label { font-size: 13px; color: var(--text2); display: block; margin-bottom: 4px; }
+.setup-card input { width: 100%; padding: 8px 12px; border: 0.5px solid var(--border2); border-radius: var(--r); font-size: 14px; background: var(--bg2); color: var(--text); outline: none; }
+.setup-card input:focus { border-color: var(--accent); box-shadow: 0 0 0 2px #378ADD33; }
+.btn-primary { background: var(--accent); color: #fff; border: none; border-radius: var(--r); padding: 9px 18px; font-size: 14px; font-weight: 500; cursor: pointer; width: 100%; }
+.btn-primary:hover { opacity: 0.9; }
+.code-display { background: var(--bg3); border-radius: var(--r); padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; border: 0.5px solid var(--border); }
+.code-val { font-family: var(--font-mono); font-size: 15px; font-weight: 500; color: var(--text); letter-spacing: 2px; }
+.main-layout { display: flex; height: 580px; border: 0.5px solid var(--border2); border-radius: var(--rl); overflow: hidden; background: var(--bg); }
+.sidebar { width: 260px; flex-shrink: 0; border-right: 0.5px solid var(--border); display: flex; flex-direction: column; background: var(--bg2); }
+.sidebar-header { padding: 14px 16px; border-bottom: 0.5px solid var(--border); display: flex; align-items: center; gap: 10px; }
+.avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 500; color: #fff; flex-shrink: 0; }
+.sidebar-tabs { display: flex; border-bottom: 0.5px solid var(--border); }
+.sidebar-tab { flex: 1; padding: 10px; font-size: 13px; color: var(--text2); background: none; border: none; cursor: pointer; border-bottom: 2px solid transparent; }
+.sidebar-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+.sidebar-content { flex: 1; overflow-y: auto; }
+.friend-item { display: flex; align-items: center; gap: 10px; padding: 10px 16px; cursor: pointer; border-bottom: 0.5px solid var(--border); }
+.friend-item:hover, .friend-item.active { background: var(--bg); }
+.friend-name { font-size: 14px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.friend-preview { font-size: 12px; color: var(--text2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.empty-state { padding: 2rem 1rem; text-align: center; color: var(--text3); font-size: 13px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.empty-state i { font-size: 32px; }
+.add-friend-btn { margin: 12px 16px; display: flex; align-items: center; gap: 8px; padding: 8px 12px; border: 0.5px dashed var(--border2); border-radius: var(--r); background: none; color: var(--text2); font-size: 13px; cursor: pointer; width: calc(100% - 32px); }
+.add-friend-btn:hover { border-color: var(--accent); color: var(--accent); }
+.chat-panel { flex: 1; display: flex; flex-direction: column; }
+.chat-header { padding: 14px 16px; border-bottom: 0.5px solid var(--border); display: flex; align-items: center; gap: 10px; }
+.chat-info { flex: 1; }
+.chat-name { font-size: 15px; font-weight: 500; color: var(--text); }
+.chat-code-label { font-size: 12px; color: var(--text3); font-family: var(--font-mono); }
+.chat-actions { display: flex; gap: 4px; }
+.icon-btn { background: none; border: none; cursor: pointer; color: var(--text2); padding: 6px; border-radius: var(--r); font-size: 18px; }
+.icon-btn:hover { background: var(--bg2); color: var(--text); }
+.icon-btn.danger:hover { background: var(--color-background-danger); color: var(--color-text-danger); }
+.messages-area { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+.msg { max-width: 72%; display: flex; flex-direction: column; gap: 3px; }
+.msg.mine { align-self: flex-end; align-items: flex-end; }
+.msg.theirs { align-self: flex-start; align-items: flex-start; }
+.msg-bubble { padding: 9px 13px; border-radius: 16px; font-size: 14px; line-height: 1.5; word-break: break-word; }
+.msg.mine .msg-bubble { background: var(--accent); color: #fff; border-bottom-right-radius: 4px; }
+.msg.theirs .msg-bubble { background: var(--bg2); color: var(--text); border-bottom-left-radius: 4px; border: 0.5px solid var(--border); }
+.msg-time { font-size: 11px; color: var(--text3); padding: 0 4px; }
+.chat-input-row { padding: 12px 16px; border-top: 0.5px solid var(--border); display: flex; gap: 8px; align-items: flex-end; }
+.chat-input-row textarea { flex: 1; resize: none; border: 0.5px solid var(--border2); border-radius: 18px; padding: 9px 14px; font-size: 14px; font-family: var(--font-sans); color: var(--text); background: var(--bg2); outline: none; max-height: 120px; min-height: 38px; line-height: 1.4; }
+.chat-input-row textarea:focus { border-color: var(--accent); }
+.send-btn { width: 38px; height: 38px; border-radius: 50%; background: var(--accent); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.send-btn i { color: #fff; font-size: 18px; }
+.no-chat { flex: 1; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 10px; color: var(--text3); font-size: 14px; }
+.no-chat i { font-size: 40px; }
+.modal-bg { position: absolute; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 100; border-radius: var(--rl); }
+.modal { background: var(--bg); border-radius: var(--rl); padding: 1.5rem; width: 320px; display: flex; flex-direction: column; gap: 1rem; border: 0.5px solid var(--border2); }
+.modal h2 { font-size: 16px; font-weight: 500; color: var(--text); }
+.modal p { font-size: 13px; color: var(--text2); }
+.modal label { font-size: 13px; color: var(--text2); }
+.modal input, .modal select, .modal textarea { width: 100%; padding: 8px 12px; border: 0.5px solid var(--border2); border-radius: var(--r); font-size: 14px; background: var(--bg2); color: var(--text); outline: none; font-family: var(--font-sans); }
+.modal input:focus { border-color: var(--accent); }
+.modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+.btn-cancel { background: var(--bg2); color: var(--text2); border: 0.5px solid var(--border2); border-radius: var(--r); padding: 8px 16px; font-size: 13px; cursor: pointer; }
+.btn-danger { background: #E24B4A; color: #fff; border: none; border-radius: var(--r); padding: 8px 16px; font-size: 13px; cursor: pointer; }
+.toast { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background: #2C2C2A; color: #fff; font-size: 13px; padding: 9px 18px; border-radius: 20px; z-index: 200; pointer-events: none; opacity: 0; transition: opacity 0.2s; white-space: nowrap; }
+.toast.show { opacity: 1; }
+.sync-indicator { font-size: 11px; color: var(--text3); display: flex; align-items: center; gap: 4px; padding: 0 16px 8px; }
+.sync-dot { width: 6px; height: 6px; border-radius: 50%; background: #1D9E75; }
+.sync-dot.syncing { background: var(--accent); animation: pulse 1s infinite; }
+.sync-dot.error { background: #E24B4A; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+.report-row { padding: 8px 16px; border-bottom: 0.5px solid var(--border); }
+.report-count { background: #FCEBEB; color: #A32D2D; font-size: 11px; font-weight: 500; padding: 2px 7px; border-radius: 10px; float: right; }
+.blocked-badge { background: var(--color-background-danger); color: var(--color-text-danger); font-size: 11px; padding: 2px 8px; border-radius: 10px; }
+</style>
+
+<div id="app">
+  <div class="screen active" id="setup-screen">
+    <div class="setup-wrap">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
+        <div class="logo-icon"><i class="ti ti-message-circle-2" aria-hidden="true"></i></div>
+        <h1 style="font-size:22px;font-weight:500;color:var(--text);">Cipher</h1>
+        <p style="font-size:14px;color:var(--text2);text-align:center;">Private messaging · messages sync across devices</p>
+      </div>
+      <div class="setup-card">
+        <div>
+          <label>Your username</label>
+          <input type="text" id="username-input" placeholder="pick a username" maxlength="24" onkeydown="if(event.key==='Enter')createProfile()" />
+        </div>
+        <button class="btn-primary" onclick="createProfile()">Get started</button>
+        <p style="font-size:12px;color:var(--text3);text-align:center;">Already have an account? Enter same username to restore.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="screen" id="main-screen">
+    <div class="main-layout" style="position:relative;">
+      <div class="sidebar">
+        <div class="sidebar-header">
+          <div class="avatar" id="my-avatar"></div>
+          <span style="font-size:14px;font-weight:500;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" id="my-name-display"></span>
+          <button class="icon-btn" onclick="showMyCode()" title="My code" style="font-size:16px;"><i class="ti ti-qrcode" aria-hidden="true"></i></button>
+        </div>
+        <div class="sidebar-tabs">
+          <button class="sidebar-tab active" id="tab-chats" onclick="switchTab('chats')">Chats</button>
+          <button class="sidebar-tab" id="tab-reports" onclick="switchTab('reports')">Reports</button>
+        </div>
+        <div class="sidebar-content">
+          <div id="friends-panel">
+            <button class="add-friend-btn" onclick="showAddFriend()"><i class="ti ti-plus" aria-hidden="true"></i> Add friend by code</button>
+            <div id="friends-list"></div>
+          </div>
+          <div id="reports-panel" style="display:none;">
+            <div id="reports-list"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chat-panel">
+        <div class="no-chat" id="no-chat"><i class="ti ti-messages" aria-hidden="true"></i><span>Select a friend to message</span></div>
+        <div style="display:none;flex-direction:column;height:100%;" id="active-chat">
+          <div class="chat-header">
+            <div class="avatar" id="chat-avatar" style="width:32px;height:32px;font-size:12px;"></div>
+            <div class="chat-info">
+              <div class="chat-name" id="chat-name-el"></div>
+              <div class="chat-code-label" id="chat-code-el"></div>
+            </div>
+            <div class="chat-actions">
+              <div class="sync-indicator"><div class="sync-dot" id="sync-dot"></div><span id="sync-label">synced</span></div>
+              <button class="icon-btn" onclick="showBlockConfirm()" title="Block"><i class="ti ti-ban" aria-hidden="true"></i></button>
+              <button class="icon-btn danger" onclick="showReportModal()" title="Report"><i class="ti ti-flag" aria-hidden="true"></i></button>
+            </div>
+          </div>
+          <div class="messages-area" id="messages-area"></div>
+          <div class="chat-input-row">
+            <textarea id="msg-input" placeholder="Message…" rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+            <button class="send-btn" onclick="sendMessage()"><i class="ti ti-send" aria-hidden="true"></i></button>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-bg" id="modal-bg" style="display:none;" onclick="closeModalBg(event)">
+        <div class="modal" id="modal-content" onclick="event.stopPropagation()"></div>
+      </div>
+    </div>
+    <div class="toast" id="toast"></div>
+  </div>
+</div>
+
+<script>
+const LOCAL_KEY = 'cipher_v3';
+let state = { me: null, friends: {}, blocked: {}, reports: [] };
+let activeFriend = null;
+let pollInterval = null;
+let lastMsgCount = {};
+
+function genCode() {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+  let c = '';
+  for (let i = 0; i < 10; i++) c += chars[Math.floor(Math.random() * 64)];
+  return c;
+}
+function initials(name) { return name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2); }
+function avatarColor(s) {
+  const colors = ['#378ADD','#1D9E75','#D85A30','#D4537E','#7F77DD','#639922','#BA7517'];
+  let h = 0; for (let c of s) h = (h*31+c.charCodeAt(0))&0xffffffff;
+  return colors[Math.abs(h)%colors.length];
+}
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function fmtTime() { return new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); }
+function fmtDateTime() { return new Date().toLocaleString([],{dateStyle:'short',timeStyle:'short'}); }
+
+function saveLocal() { try { localStorage.setItem(LOCAL_KEY, JSON.stringify(state)); } catch(e){} }
+function loadLocal() { try { const s=localStorage.getItem(LOCAL_KEY); if(s){state=JSON.parse(s);return true;} } catch(e){} return false; }
+
+function toast(msg, dur=2200) {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),dur);
+}
+
+function setSyncStatus(status) {
+  const dot=document.getElementById('sync-dot');
+  const lbl=document.getElementById('sync-label');
+  if(!dot)return;
+  dot.className='sync-dot'+(status==='syncing'?' syncing':status==='error'?' error':'');
+  lbl.textContent=status==='syncing'?'syncing…':status==='error'?'offline':'synced';
+}
+
+function chatKey(a, b) {
+  const sorted=[a,b].sort();
+  return `chat:${sorted[0]}:${sorted[1]}`;
+}
+
+async function loadMessages(friendCode) {
+  const key = chatKey(state.me.code, friendCode);
+  try {
+    const result = await window.storage.get(key, true);
+    return result ? JSON.parse(result.value) : [];
+  } catch(e) { return []; }
+}
+
+async function saveMessages(friendCode, msgs) {
+  const key = chatKey(state.me.code, friendCode);
+  try {
+    await window.storage.set(key, JSON.stringify(msgs), true);
+  } catch(e) {}
+}
+
+async function sendMessage() {
+  if (!activeFriend) return;
+  const input = document.getElementById('msg-input');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  input.style.height = '';
+  setSyncStatus('syncing');
+  try {
+    const msgs = await loadMessages(activeFriend.code);
+    msgs.push({ from: state.me.code, fromName: state.me.name, text, time: fmtTime(), ts: Date.now() });
+    await saveMessages(activeFriend.code, msgs);
+    lastMsgCount[activeFriend.code] = msgs.length;
+    renderMessageList(msgs);
+    setSyncStatus('ok');
+  } catch(e) {
+    setSyncStatus('error');
+    toast('Failed to send');
+  }
+}
+
+async function pollMessages() {
+  if (!activeFriend || state.blocked[activeFriend.code]) return;
+  try {
+    const msgs = await loadMessages(activeFriend.code);
+    const prev = lastMsgCount[activeFriend.code] || 0;
+    if (msgs.length !== prev) {
+      lastMsgCount[activeFriend.code] = msgs.length;
+      renderMessageList(msgs);
+      if (msgs.length > prev) setSyncStatus('ok');
+    }
+  } catch(e) {}
+}
+
+function renderMessageList(msgs) {
+  const area = document.getElementById('messages-area');
+  if (!msgs.length) {
+    area.innerHTML = `<div style="text-align:center;color:var(--text3);font-size:13px;margin:auto;">Send a message to start the conversation</div>`;
+    return;
+  }
+  const wasAtBottom = area.scrollHeight - area.scrollTop - area.clientHeight < 60;
+  area.innerHTML = msgs.map(m => {
+    const mine = m.from === state.me.code;
+    return `<div class="msg ${mine?'mine':'theirs'}">
+      <div class="msg-bubble">${esc(m.text)}</div>
+      <div class="msg-time">${esc(m.time)}</div>
+    </div>`;
+  }).join('');
+  if (wasAtBottom) area.scrollTop = area.scrollHeight;
+}
+
+async function openChat(code) {
+  const f = state.friends[code];
+  if (!f) return;
+  if (state.blocked[code]) { toast('You blocked this user'); return; }
+  activeFriend = f;
+  if (pollInterval) clearInterval(pollInterval);
+  document.getElementById('no-chat').style.display = 'none';
+  const ac = document.getElementById('active-chat');
+  ac.style.display = 'flex';
+  document.getElementById('chat-name-el').textContent = f.name;
+  document.getElementById('chat-code-el').textContent = f.code;
+  const av = document.getElementById('chat-avatar');
+  av.textContent = initials(f.name);
+  av.style.background = avatarColor(f.code);
+  setSyncStatus('syncing');
+  const msgs = await loadMessages(code);
+  lastMsgCount[code] = msgs.length;
+  renderMessageList(msgs);
+  setSyncStatus('ok');
+  renderFriends();
+  document.getElementById('msg-input').focus();
+  pollInterval = setInterval(pollMessages, 2500);
+}
+
+function renderFriends() {
+  const list = document.getElementById('friends-list');
+  const friends = Object.values(state.friends).filter(f=>!state.blocked[f.code]);
+  const blocked = Object.values(state.friends).filter(f=>state.blocked[f.code]);
+  let html = '';
+  if (!friends.length && !blocked.length) {
+    html = `<div class="empty-state"><i class="ti ti-user-plus"></i><span>No friends yet.<br>Add one with their code.</span></div>`;
+  }
+  for (const f of friends) {
+    const active = activeFriend && activeFriend.code === f.code ? ' active' : '';
+    html += `<div class="friend-item${active}" onclick="openChat('${f.code}')">
+      <div class="avatar" style="background:${avatarColor(f.code)};width:36px;height:36px;font-size:13px;">${initials(f.name)}</div>
+      <div style="flex:1;overflow:hidden;">
+        <div class="friend-name">${esc(f.name)}</div>
+        <div class="friend-preview">${esc(f.code)}</div>
+      </div>
+    </div>`;
+  }
+  for (const f of blocked) {
+    html += `<div class="friend-item" style="opacity:0.5;">
+      <div class="avatar" style="background:#888;width:36px;height:36px;font-size:13px;">${initials(f.name)}</div>
+      <div style="flex:1;overflow:hidden;">
+        <div class="friend-name">${esc(f.name)} <span class="blocked-badge">blocked</span></div>
+      </div>
+      <button class="icon-btn" onclick="unblock('${f.code}',event)"><i class="ti ti-lock-open"></i></button>
+    </div>`;
+  }
+  list.innerHTML = html;
+}
+
+function renderReports() {
+  const list = document.getElementById('reports-list');
+  const reports = state.reports || [];
+  if (!reports.length) {
+    list.innerHTML = `<div class="empty-state"><i class="ti ti-file-description"></i><span>No reports yet</span></div>`;
+    return;
+  }
+  const counts = {};
+  for (const r of reports) {
+    if (!counts[r.reported]) counts[r.reported] = { name: r.reportedName, entries: [] };
+    counts[r.reported].entries.push(r);
+  }
+  let html = `<div style="padding:10px 16px 4px;font-size:11px;color:var(--text3);">Report log</div>`;
+  for (const [code, data] of Object.entries(counts)) {
+    html += `<div class="report-row">
+      <span class="report-count">${data.entries.length} report${data.entries.length>1?'s':''}</span>
+      <div style="font-size:13px;font-weight:500;color:var(--text);">${esc(data.name)}</div>
+      <div style="font-size:10px;font-family:var(--font-mono);color:var(--text3);">${esc(code)}</div>`;
+    for (const e of data.entries) {
+      html += `<div style="font-size:11px;color:var(--text2);margin-top:4px;padding-top:4px;border-top:0.5px solid var(--border);">
+        Reported by <strong>${esc(e.reporterName)}</strong> · ${esc(e.reason)}<br>
+        <span style="font-size:10px;">${esc(e.time)}</span>
+      </div>`;
+    }
+    html += `</div>`;
+  }
+  list.innerHTML = html;
+}
+
+function switchTab(tab) {
+  document.getElementById('tab-chats').classList.toggle('active', tab==='chats');
+  document.getElementById('tab-reports').classList.toggle('active', tab==='reports');
+  document.getElementById('friends-panel').style.display = tab==='chats'?'':'none';
+  document.getElementById('reports-panel').style.display = tab==='reports'?'':'none';
+  if (tab==='reports') renderReports();
+}
+
+function showModal(html) {
+  document.getElementById('modal-content').innerHTML = html;
+  document.getElementById('modal-bg').style.display = 'flex';
+}
+function closeModal() { document.getElementById('modal-bg').style.display = 'none'; }
+function closeModalBg(e) { if(e.target===document.getElementById('modal-bg')) closeModal(); }
+
+function showAddFriend() {
+  showModal(`
+    <h2>Add friend</h2>
+    <p>Enter their 10-character base64 friend code.</p>
+    <div><label>Their username</label><input id="af-name" type="text" placeholder="their name" maxlength="24" /></div>
+    <div><label>Friend code</label><input id="af-code" type="text" placeholder="e.g. aB3+/Xk2mQ" maxlength="10" style="font-family:var(--font-mono);letter-spacing:2px;" /></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-primary" style="width:auto;" onclick="addFriend()">Add</button>
+    </div>
+  `);
+}
+
+function addFriend() {
+  const name = document.getElementById('af-name').value.trim();
+  const code = document.getElementById('af-code').value.trim();
+  if (!name) { toast('Enter their username'); return; }
+  if (!/^[A-Za-z0-9+/]{10}$/.test(code)) { toast('Code must be 10 base64 chars'); return; }
+  if (code === state.me.code) { toast("That's your own code!"); return; }
+  if (state.friends[code]) { toast('Already friends'); return; }
+  state.friends[code] = { name, code };
+  saveLocal();
+  closeModal();
+  renderFriends();
+  toast(`Added ${name}`);
+  openChat(code);
+}
+
+function showMyCode() {
+  showModal(`
+    <h2>Your friend code</h2>
+    <p>Share this so others can add you.</p>
+    <div class="code-display" style="margin-top:4px;">
+      <span class="code-val">${state.me.code}</span>
+      <button class="icon-btn" onclick="navigator.clipboard.writeText('${state.me.code}').then(()=>toast('Copied!'))"><i class="ti ti-copy"></i></button>
+    </div>
+    <p style="font-size:12px;color:var(--text3);">Username: <strong>${esc(state.me.name)}</strong></p>
+    <div class="modal-actions"><button class="btn-cancel" onclick="closeModal()">Close</button></div>
+  `);
+}
+
+function showBlockConfirm() {
+  if (!activeFriend) return;
+  const f = activeFriend;
+  showModal(`
+    <h2>Block ${esc(f.name)}?</h2>
+    <p>You won't receive messages from them.</p>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-danger" onclick="blockUser('${f.code}')">Block</button>
+    </div>
+  `);
+}
+
+function blockUser(code) {
+  state.blocked[code] = true;
+  saveLocal();
+  closeModal();
+  activeFriend = null;
+  if (pollInterval) clearInterval(pollInterval);
+  document.getElementById('no-chat').style.display = '';
+  document.getElementById('active-chat').style.display = 'none';
+  renderFriends();
+  toast('User blocked');
+}
+
+function unblock(code, e) {
+  e.stopPropagation();
+  delete state.blocked[code];
+  saveLocal();
+  renderFriends();
+  toast('User unblocked');
+}
+
+function showReportModal() {
+  if (!activeFriend) return;
+  const f = activeFriend;
+  showModal(`
+    <h2>Report ${esc(f.name)}</h2>
+    <p>This will be logged with your name, their info, and timestamp.</p>
+    <div><label>Reason</label>
+      <select id="report-reason">
+        <option>Harassment</option><option>Spam</option><option>Inappropriate content</option><option>Impersonation</option><option>Other</option>
+      </select>
+    </div>
+    <div><label>Details (optional)</label><textarea id="report-details" rows="2" placeholder="Any additional info…"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-danger" onclick="submitReport('${f.code}','${esc(f.name)}')">Submit</button>
+    </div>
+  `);
+}
+
+async function submitReport(code, name) {
+  const reason = document.getElementById('report-reason').value;
+  const details = document.getElementById('report-details').value.trim();
+  const entry = {
+    reported: code, reportedName: name,
+    reporterCode: state.me.code, reporterName: state.me.name,
+    reason: reason+(details?': '+details:''), time: fmtDateTime()
+  };
+  if (!state.reports) state.reports = [];
+  state.reports.push(entry);
+  saveLocal();
+  try {
+    const existing = await window.storage.get('reports:global', true).catch(()=>null);
+    const all = existing ? JSON.parse(existing.value) : [];
+    all.push(entry);
+    await window.storage.set('reports:global', JSON.stringify(all), true);
+  } catch(e) {}
+  closeModal();
+  toast('Report submitted');
+}
+
+function createProfile() {
+  const name = document.getElementById('username-input').value.trim();
+  if (!name) { toast('Enter a username'); return; }
+  const slugName = name.toLowerCase().replace(/\s+/g,'-');
+  const storedCode = localStorage.getItem('cipher_code_'+slugName);
+  if (storedCode) {
+    state.me = { name, code: storedCode };
+  } else {
+    const code = genCode();
+    state.me = { name, code };
+    localStorage.setItem('cipher_code_'+slugName, code);
+  }
+  saveLocal();
+  boot();
+}
+
+function handleKey(e) { if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();} }
+function autoResize(el) { el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,120)+'px'; }
+
+function boot() {
+  document.getElementById('setup-screen').classList.remove('active');
+  document.getElementById('main-screen').classList.add('active');
+  document.getElementById('my-name-display').textContent = state.me.name;
+  const av = document.getElementById('my-avatar');
+  av.textContent = initials(state.me.name);
+  av.style.background = avatarColor(state.me.code);
+  renderFriends();
+}
+
+(function init() {
+  if (loadLocal() && state.me) boot();
+})();
+</script>
