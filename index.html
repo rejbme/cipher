@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cipher | Private Messaging</title>
-    <!-- Tabler Icons -->
+    <title>Cipher | Secure Login</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
     <style>
         :root {
@@ -18,8 +17,7 @@
             --border: #e2e8f0;
             --radius-lg: 20px;
             --radius-md: 12px;
-            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
-            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
         }
 
         @media (prefers-color-scheme: dark) {
@@ -30,332 +28,162 @@
                 --text-main: #f1f5f9;
                 --text-muted: #94a3b8;
                 --border: #334155;
-                --accent-soft: #378add33;
             }
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: var(--font-sans); background: var(--bg-main); color: var(--text-main); height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        * { box-sizing: border-box; margin: 0; padding: 0; transition: background 0.3s, border-color 0.3s; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-main); color: var(--text-main); height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden; }
 
-        #app { width: 100%; max-width: 1100px; height: 90vh; background: var(--bg-card); border-radius: var(--radius-lg); box-shadow: var(--shadow); border: 1px solid var(--border); overflow: hidden; position: relative; }
+        #app { width: 100%; max-width: 1100px; height: 90vh; background: var(--bg-card); border-radius: var(--radius-lg); box-shadow: var(--shadow); border: 1px solid var(--border); overflow: hidden; display: flex; position: relative; }
 
-        /* --- SCREENS --- */
-        .screen { display: none; width: 100%; height: 100%; }
-        .screen.active { display: flex; flex-direction: column; }
+        /* --- AUTH SCREEN --- */
+        .auth-container { flex: 1; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle at top right, var(--accent-soft), transparent); }
+        .auth-card { background: var(--bg-card); padding: 40px; border-radius: var(--radius-lg); border: 1px solid var(--border); width: 100%; max-width: 420px; box-shadow: var(--shadow); text-align: center; }
+        
+        .logo-icon { width: 64px; height: 64px; background: var(--accent); color: white; border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 32px; margin: 0 auto 20px; }
+        
+        input { width: 100%; padding: 12px 16px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg-main); color: var(--text-main); font-size: 14px; margin-bottom: 12px; outline: none; }
+        input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
 
-        /* --- SETUP SCREEN --- */
-        .setup-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2rem; background: radial-gradient(circle at top right, var(--accent-soft), transparent); }
-        .logo-box { text-align: center; }
-        .logo-icon { width: 72px; height: 72px; background: var(--accent); color: white; border-radius: 22px; display: flex; align-items: center; justify-content: center; font-size: 36px; margin: 0 auto 1rem; box-shadow: 0 10px 15px -3px #378add66; }
-        .setup-card { background: var(--bg-card); padding: 2rem; border-radius: var(--radius-lg); border: 1px solid var(--border); width: 360px; box-shadow: var(--shadow); }
-        .setup-card input { width: 100%; padding: 12px 16px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg-main); color: var(--text-main); font-size: 15px; margin: 0.5rem 0 1rem; outline: none; transition: border-color 0.2s; }
-        .setup-card input:focus { border-color: var(--accent); }
+        .btn-primary { width: 100%; padding: 12px; background: var(--accent); color: white; border: none; border-radius: var(--radius-md); font-weight: 600; cursor: pointer; margin-top: 10px; }
+        .btn-google { width: 100%; padding: 12px; background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border); border-radius: var(--radius-md); font-weight: 500; cursor: pointer; margin-top: 15px; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.2s; }
+        .btn-google:hover { background: var(--bg-main); }
+        .btn-google img { width: 18px; }
 
-        /* --- MAIN LAYOUT --- */
-        .main-layout { display: flex; height: 100%; }
+        .divider { display: flex; align-items: center; margin: 20px 0; color: var(--text-muted); font-size: 12px; }
+        .divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: var(--border); margin: 0 10px; }
+
+        /* --- MESSENGER UI --- */
         .sidebar { width: 320px; background: var(--bg-sidebar); border-right: 1px solid var(--border); display: flex; flex-direction: column; }
-        .sidebar-header { padding: 20px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--border); }
-        .avatar { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 14px; flex-shrink: 0; }
+        .chat-panel { flex: 1; display: flex; flex-direction: column; background: var(--bg-card); }
+        .item { padding: 12px; margin: 4px 8px; border-radius: var(--radius-md); cursor: pointer; display: flex; align-items: center; gap: 12px; }
+        .item.active { background: var(--accent); color: white; }
         
-        .sidebar-tabs { display: flex; padding: 10px; gap: 5px; }
-        .tab-btn { flex: 1; padding: 8px; border: none; background: transparent; color: var(--text-muted); cursor: pointer; border-radius: 8px; font-size: 13px; font-weight: 500; transition: 0.2s; }
-        .tab-btn.active { background: var(--accent-soft); color: var(--accent); }
+        .avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--accent); color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; }
 
-        .sidebar-content { flex: 1; overflow-y: auto; padding: 10px; }
-        .friend-item { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: var(--radius-md); cursor: pointer; transition: 0.2s; margin-bottom: 4px; }
-        .friend-item:hover { background: var(--accent-soft); }
-        .friend-item.active { background: var(--accent); color: white; }
-        .friend-item.active .friend-preview { color: #e2e8f0; }
-
-        /* --- CHAT AREA --- */
-        .chat-panel { flex: 1; display: flex; flex-direction: column; background: var(--bg-card); position: relative; }
-        .chat-header { padding: 16px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 15px; background: rgba(255,255,255,0.01); backdrop-filter: blur(10px); }
-        .messages-area { flex: 1; overflow-y: auto; padding: 24px; display: flex; flex-direction: column; gap: 12px; scroll-behavior: smooth; }
-        
-        .msg { max-width: 80%; display: flex; flex-direction: column; gap: 4px; animation: fadeIn 0.3s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-        
-        .msg.mine { align-self: flex-end; }
-        .msg.theirs { align-self: flex-start; }
-        .msg-bubble { padding: 12px 16px; border-radius: 18px; font-size: 15px; line-height: 1.4; }
-        .msg.mine .msg-bubble { background: var(--accent); color: white; border-bottom-right-radius: 4px; }
-        .msg.theirs .msg-bubble { background: var(--bg-main); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
-        .msg-time { font-size: 11px; color: var(--text-muted); margin: 0 5px; }
-
-        .input-wrap { padding: 20px; border-top: 1px solid var(--border); display: flex; gap: 12px; align-items: flex-end; }
-        .input-wrap textarea { flex: 1; background: var(--bg-main); border: 1px solid var(--border); border-radius: 15px; padding: 12px 15px; font-family: inherit; font-size: 15px; color: var(--text-main); resize: none; outline: none; max-height: 150px; transition: border-color 0.2s; }
-        .input-wrap textarea:focus { border-color: var(--accent); }
-
-        .btn-round { width: 42px; height: 42px; border-radius: 50%; border: none; background: var(--accent); color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
-        .btn-round:hover { transform: scale(1.05); opacity: 0.9; }
-
-        /* --- UI COMPONENTS --- */
-        .btn-primary { background: var(--accent); color: white; border: none; padding: 12px; border-radius: var(--radius-md); font-weight: 600; cursor: pointer; width: 100%; transition: 0.2s; }
-        .btn-primary:hover { opacity: 0.9; }
-        .icon-btn { background: transparent; border: none; color: var(--text-muted); padding: 8px; border-radius: 8px; cursor: pointer; font-size: 20px; transition: 0.2s; }
-        .icon-btn:hover { background: var(--accent-soft); color: var(--accent); }
-        .icon-btn.danger:hover { background: #fee2e2; color: #ef4444; }
-
-        .toast { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); background: #1e293b; color: white; padding: 10px 20px; border-radius: 30px; font-size: 13px; z-index: 1000; opacity: 0; pointer-events: none; transition: 0.3s; }
-        .toast.show { opacity: 1; bottom: 40px; }
-
-        /* Modal Glassmorphism */
-        .modal-bg { position: absolute; inset: 0; background: rgba(0,0,0,0.3); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 100; }
-        .modal { background: var(--bg-card); width: 90%; max-width: 400px; padding: 24px; border-radius: var(--radius-lg); border: 1px solid var(--border); box-shadow: var(--shadow); }
-        
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+        /* --- UTILS --- */
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
 <div id="app">
-    <!-- Setup Screen -->
-    <div class="screen active" id="setup-screen">
-        <div class="setup-wrap">
-            <div class="logo-box">
-                <div class="logo-icon"><i class="ti ti-shield-lock"></i></div>
-                <h1 style="margin-bottom: 8px;">Cipher</h1>
-                <p style="color: var(--text-muted); font-size: 15px;">Encrypted, Private, Permanent.</p>
-            </div>
-            <div class="setup-card">
-                <label style="font-size: 13px; font-weight: 600;">Pick a username</label>
-                <input type="text" id="username-input" placeholder="e.g. Satoshi" maxlength="20">
-                <button class="btn-primary" onclick="createProfile()">Initialize Secure Session</button>
-            </div>
+    <!-- Auth Screen -->
+    <div id="auth-screen" class="auth-container">
+        <div class="auth-card">
+            <div class="logo-icon"><i class="ti ti-brand-messenger"></i></div>
+            <h2 id="auth-title">Welcome back</h2>
+            <p id="auth-subtext" style="color: var(--text-muted); font-size: 14px; margin-bottom: 25px;">Enter your details to access your chats</p>
+            
+            <input type="email" id="email-input" placeholder="Email address">
+            <input type="password" id="pass-input" placeholder="Password">
+            
+            <button class="btn-primary" onclick="handleAuth()">Sign In</button>
+            
+            <div class="divider">OR</div>
+            
+            <button class="btn-google" onclick="googleSignIn()">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google">
+                Continue with Google
+            </button>
+            
+            <p style="margin-top: 20px; font-size: 13px;">
+                <span id="toggle-text">Don't have an account?</span> 
+                <a href="#" onclick="toggleAuthMode()" style="color: var(--accent); text-decoration: none; font-weight: 600;">Click here</a>
+            </p>
         </div>
     </div>
 
-    <!-- Main Messenger Screen -->
-    <div class="screen" id="main-screen">
-        <div class="main-layout">
-            <!-- Sidebar -->
-            <div class="sidebar">
-                <div class="sidebar-header">
-                    <div class="avatar" id="my-avatar"></div>
-                    <div style="flex:1">
-                        <div id="my-name-display" style="font-weight:600; font-size: 14px;"></div>
-                        <div style="font-size: 11px; color: var(--text-muted);">Online & Secured</div>
-                    </div>
-                    <button class="icon-btn" onclick="showMyCode()"><i class="ti ti-qrcode"></i></button>
+    <!-- Main App Screen -->
+    <div id="main-screen" class="hidden" style="width: 100%; display: flex;">
+        <div class="sidebar">
+            <div style="padding: 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div id="user-avatar" class="avatar" style="width: 32px; height: 32px; font-size: 12px;"></div>
+                    <span id="user-display-name" style="font-weight: 600; font-size: 14px;"></span>
                 </div>
-                
-                <div class="sidebar-tabs">
-                    <button class="tab-btn active" id="tab-chats" onclick="switchTab('chats')">Messages</button>
-                    <button class="tab-btn" id="tab-reports" onclick="switchTab('reports')">Security Logs</button>
-                </div>
-
-                <div class="sidebar-content">
-                    <div id="friends-panel">
-                        <button class="btn-primary" style="background: var(--bg-main); color: var(--accent); margin-bottom: 15px; font-size: 13px; border: 1px dashed var(--accent);" onclick="showAddFriend()">
-                            <i class="ti ti-plus"></i> Add Friend by Code
-                        </button>
-                        <div id="friends-list"></div>
-                    </div>
-                    <div id="reports-panel" style="display:none;">
-                        <div id="reports-list"></div>
-                    </div>
-                </div>
+                <button onclick="signOut()" style="background: none; border: none; color: var(--text-muted); cursor: pointer;"><i class="ti ti-logout"></i></button>
             </div>
-
-            <!-- Chat Panel -->
-            <div class="chat-panel">
-                <div id="no-chat" style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; color:var(--text-muted);">
-                    <i class="ti ti-message-off" style="font-size: 48px; margin-bottom: 10px; opacity: 0.3;"></i>
-                    <p>Select a contact to begin</p>
-                </div>
-
-                <div id="active-chat" style="display:none; flex-direction:column; height:100%;">
-                    <div class="chat-header">
-                        <div class="avatar" id="chat-avatar"></div>
-                        <div style="flex:1">
-                            <div id="chat-name-el" style="font-weight:600;"></div>
-                            <div id="chat-code-el" style="font-size:11px; color:var(--text-muted); font-family: monospace;"></div>
-                        </div>
-                        <div style="display:flex; gap: 5px;">
-                            <button class="icon-btn" onclick="showBlockConfirm()"><i class="ti ti-ban"></i></button>
-                            <button class="icon-btn danger" onclick="showReportModal()"><i class="ti ti-flag"></i></button>
-                        </div>
-                    </div>
-
-                    <div class="messages-area" id="messages-area"></div>
-
-                    <div class="input-wrap">
-                        <textarea id="msg-input" placeholder="Write an encrypted message..." rows="1" oninput="autoResize(this)"></textarea>
-                        <button class="btn-round" onclick="sendMessage()"><i class="ti ti-send"></i></button>
-                    </div>
-                </div>
+            <div style="flex: 1; overflow-y: auto; padding-top: 10px;">
+                <div id="chat-list"></div>
+            </div>
+        </div>
+        
+        <div class="chat-panel">
+            <div id="no-chat" style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-muted);">
+                <i class="ti ti-message-2" style="font-size: 50px; opacity: 0.2;"></i>
+                <p>Select a conversation</p>
             </div>
         </div>
     </div>
-
-    <!-- Modals & Toasts -->
-    <div class="modal-bg" id="modal-bg" style="display:none;" onclick="closeModalBg(event)">
-        <div class="modal" id="modal-content" onclick="event.stopPropagation()"></div>
-    </div>
-    <div class="toast" id="toast"></div>
 </div>
 
 <script>
-    // Logic & State Management
-    const LOCAL_KEY = 'cipher_v3_state';
-    let state = { me: null, friends: {}, blocked: {}, reports: [] };
-    let activeFriend = null;
-    let pollInterval = null;
+    let isSignUp = false;
+    let currentUser = null;
 
-    // Utils
-    const genCode = () => Array.from({length: 10}, () => 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'[Math.floor(Math.random() * 64)]).join('');
-    const getInitials = n => n.split(' ').map(x => x[0]).join('').toUpperCase().slice(0,2);
-    const getAvatarColor = s => ['#378ADD','#1D9E75','#D85A30','#D4537E','#7F77DD','#639922','#BA7517'][Math.abs(s.split('').reduce((a,b)=>(((a<<5)-a)+b.charCodeAt(0))|0,0))%7];
-    
-    const toast = (m) => {
-        const t = document.getElementById('toast');
-        t.textContent = m; t.classList.add('show');
-        setTimeout(() => t.classList.remove('show'), 2500);
-    };
+    function toggleAuthMode() {
+        isSignUp = !isSignUp;
+        document.getElementById('auth-title').textContent = isSignUp ? "Create Account" : "Welcome back";
+        document.getElementById('auth-subtext').textContent = isSignUp ? "Join Cipher today" : "Enter your details to access your chats";
+        document.getElementById('toggle-text').textContent = isSignUp ? "Already have an account?" : "Don't have an account?";
+    }
 
-    // Data Storage
-    const save = () => localStorage.setItem(LOCAL_KEY, JSON.stringify(state));
-    const load = () => { const s = localStorage.getItem(LOCAL_KEY); if(s) state = JSON.parse(s); };
-
-    // Chat Logic
-    async function sendMessage() {
-        const input = document.getElementById('msg-input');
-        const text = input.value.trim();
-        if(!text || !activeFriend) return;
-
-        const msg = { from: state.me.code, text, time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}), ts: Date.now() };
+    // Modern Login Logic
+    function handleAuth() {
+        const email = document.getElementById('email-input').value;
+        if (!email.includes('@')) return alert("Enter a valid email");
         
-        // Mocking storage call
-        const key = `chat_${[state.me.code, activeFriend.code].sort().join('_')}`;
-        let msgs = JSON.parse(localStorage.getItem(key) || '[]');
-        msgs.push(msg);
-        localStorage.setItem(key, JSON.stringify(msgs));
-
-        input.value = '';
-        input.style.height = 'auto';
-        renderMessages(msgs);
+        // Mocking successful login
+        currentUser = {
+            name: email.split('@')[0],
+            email: email,
+            photo: null
+        };
+        completeLogin();
     }
 
-    function renderMessages(msgs) {
-        const area = document.getElementById('messages-area');
-        area.innerHTML = msgs.map(m => `
-            <div class="msg ${m.from === state.me.code ? 'mine' : 'theirs'}">
-                <div class="msg-bubble">${m.text}</div>
-                <div class="msg-time">${m.time}</div>
-            </div>
-        `).join('');
-        area.scrollTop = area.scrollHeight;
+    function googleSignIn() {
+        // In a real app, you'd call firebase.auth().signInWithPopup(provider)
+        alert("Redirecting to Google...");
+        setTimeout(() => {
+            currentUser = {
+                name: "Google User",
+                email: "user@gmail.com",
+                photo: "G"
+            };
+            completeLogin();
+        }, 1000);
     }
 
-    function openChat(code) {
-        activeFriend = state.friends[code];
-        document.getElementById('no-chat').style.display = 'none';
-        document.getElementById('active-chat').style.display = 'flex';
-        document.getElementById('chat-name-el').textContent = activeFriend.name;
-        document.getElementById('chat-code-el').textContent = activeFriend.code;
+    function completeLogin() {
+        document.getElementById('auth-screen').classList.add('hidden');
+        document.getElementById('main-screen').classList.remove('hidden');
         
-        const av = document.getElementById('chat-avatar');
-        av.textContent = getInitials(activeFriend.name);
-        av.style.background = getAvatarColor(activeFriend.code);
-
-        const key = `chat_${[state.me.code, activeFriend.code].sort().join('_')}`;
-        renderMessages(JSON.parse(localStorage.getItem(key) || '[]'));
-        renderFriends();
+        document.getElementById('user-display-name').textContent = currentUser.name;
+        const av = document.getElementById('user-avatar');
+        av.textContent = currentUser.photo || currentUser.name[0].toUpperCase();
+        
+        // Initialize dummy data
+        renderDummyChats();
     }
 
-    function renderFriends() {
-        const list = document.getElementById('friends-list');
-        list.innerHTML = Object.values(state.friends).map(f => `
-            <div class="friend-item ${activeFriend?.code === f.code ? 'active' : ''}" onclick="openChat('${f.code}')">
-                <div class="avatar" style="background:${getAvatarColor(f.code)}; width:36px; height:36px;">${getInitials(f.name)}</div>
-                <div style="flex:1">
-                    <div style="font-size:14px; font-weight:500;">${f.name}</div>
-                    <div style="font-size:11px; opacity:0.7;" class="friend-preview">Tap to message</div>
-                </div>
+    function signOut() {
+        currentUser = null;
+        document.getElementById('main-screen').classList.add('hidden');
+        document.getElementById('auth-screen').classList.remove('hidden');
+    }
+
+    function renderDummyChats() {
+        const list = document.getElementById('chat-list');
+        const names = ["Alex Rivera", "Dev Team 🚀", "Satoshi", "Work Group"];
+        list.innerHTML = names.map(n => `
+            <div class="item">
+                <div class="avatar" style="width: 36px; height: 36px; background: #e2e8f0; color: #64748b; font-size: 13px;">${n[0]}</div>
+                <div style="flex: 1; font-size: 14px; font-weight: 500;">${n}</div>
             </div>
         `).join('');
     }
-
-    // UI Handlers
-    function createProfile() {
-        const name = document.getElementById('username-input').value.trim();
-        if(!name) return toast("Username required");
-        state.me = { name, code: genCode() };
-        save();
-        boot();
-    }
-
-    function switchTab(t) {
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById('tab-'+t).classList.add('active');
-        document.getElementById('friends-panel').style.display = t === 'chats' ? 'block' : 'none';
-        document.getElementById('reports-panel').style.display = t === 'reports' ? 'block' : 'none';
-    }
-
-    function showAddFriend() {
-        showModal(`
-            <h3 style="margin-bottom:10px">Add Connection</h3>
-            <p style="font-size:13px; color:var(--text-muted); margin-bottom:20px">Enter the unique 10-digit identity code.</p>
-            <input id="af-name" type="text" placeholder="Contact Name" style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid var(--border)">
-            <input id="af-code" type="text" placeholder="Identity Code" maxlength="10" style="width:100%; padding:10px; margin-bottom:20px; border-radius:8px; border:1px solid var(--border); font-family:monospace">
-            <button class="btn-primary" onclick="addFriend()">Link Identity</button>
-        `);
-    }
-
-    function addFriend() {
-        const n = document.getElementById('af-name').value;
-        const c = document.getElementById('af-code').value;
-        if(n && c.length === 10) {
-            state.friends[c] = { name: n, code: c };
-            save(); closeModal(); renderFriends();
-            toast("Connection established");
-        }
-    }
-
-    function showMyCode() {
-        showModal(`
-            <h3 style="margin-bottom:10px">Your Identity</h3>
-            <div style="background:var(--bg-main); padding:20px; border-radius:12px; text-align:center; margin:15px 0;">
-                <div style="font-family:monospace; font-size:24px; letter-spacing:3px; color:var(--accent); font-weight:bold;">${state.me.code}</div>
-            </div>
-            <p style="font-size:12px; color:var(--text-muted); text-align:center">Share this code with others to receive messages.</p>
-            <button class="btn-primary" style="margin-top:20px" onclick="closeModal()">Close</button>
-        `);
-    }
-
-    function showModal(html) {
-        const m = document.getElementById('modal-content');
-        m.innerHTML = html;
-        document.getElementById('modal-bg').style.display = 'flex';
-    }
-    function closeModal() { document.getElementById('modal-bg').style.display = 'none'; }
-    function closeModalBg(e) { if(e.target.id === 'modal-bg') closeModal(); }
-    function autoResize(el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }
-
-    function boot() {
-        document.getElementById('setup-screen').classList.remove('active');
-        document.getElementById('main-screen').classList.add('active');
-        document.getElementById('my-name-display').textContent = state.me.name;
-        const av = document.getElementById('my-avatar');
-        av.textContent = getInitials(state.me.name);
-        av.style.background = getAvatarColor(state.me.code);
-        renderFriends();
-    }
-
-    // Init
-    window.onload = () => {
-        load();
-        if(state.me) boot();
-        
-        // Enter key listener for chat
-        document.addEventListener('keydown', e => {
-            if(e.key === 'Enter' && !e.shiftKey && document.activeElement.id === 'msg-input') {
-                e.preventDefault();
-                sendMessage();
-            }
-        });
-    };
 </script>
 
 </body>
